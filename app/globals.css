@@ -1,0 +1,209 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+  --qanoon-magenta: #A21CAF;
+  --qanoon-magenta-hover: #86198F;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 3.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.font-serif {
+  font-family: var(--font-playfair), Georgia, 'Times New Roman', Times, serif;
+}
+
+.font-sans {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+.grid-background {
+  background-image:
+    linear-gradient(to right, #e5e7eb 1px, transparent 1px),
+    linear-gradient(to bottom, #e5e7eb 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ========== Accent color utilities (driven by --accent CSS vars) ========== */
+@layer utilities {
+  .bg-accent-dynamic {
+    background-color: var(--accent);
+  }
+  .hover\:bg-accent-hover:hover {
+    background-color: var(--accent-hover);
+  }
+  .border-accent-dynamic {
+    border-color: var(--accent);
+  }
+  .hover\:border-accent-dynamic:hover {
+    border-color: var(--accent);
+  }
+  .hover\:bg-accent-light:hover {
+    background-color: var(--accent-light);
+  }
+  .text-accent-dynamic {
+    color: var(--accent);
+  }
+  .bg-accent-light {
+    background-color: var(--accent-light);
+  }
+}
+
+/* ========== Print Styles for Judicial Portal ========== */
+@media print {
+  /* Hide non-printable UI elements */
+  aside,
+  nav,
+  [data-sidebar],
+  .judges-sidebar,
+  [role="navigation"],
+  button,
+  .no-print,
+  [data-radix-dialog-overlay],
+  [data-radix-popper-content-wrapper],
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  /* Reset layout - remove sidebar padding */
+  main {
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  /* Full width content */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+  }
+
+  .max-w-\[1400px\] {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* Hide sticky topbar/breadcrumbs */
+  .sticky {
+    position: static !important;
+    border-bottom: none !important;
+  }
+
+  /* Typography for legal content */
+  .font-serif {
+    font-family: Georgia, 'Times New Roman', Times, serif !important;
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+  }
+
+  /* Cards - clean printable appearance */
+  .rounded-xl,
+  .rounded-lg,
+  .rounded-md {
+    border-radius: 0 !important;
+  }
+
+  [class*="shadow"] {
+    box-shadow: none !important;
+  }
+
+  [class*="border"] {
+    border-color: #ddd !important;
+  }
+
+  /* Prevent page breaks inside content blocks */
+  .card,
+  [class*="CardContent"],
+  section,
+  article {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Page breaks before major sections */
+  h1 {
+    page-break-before: auto;
+    page-break-after: avoid;
+  }
+
+  h2, h3 {
+    page-break-after: avoid;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+
+  /* Show link URLs in print */
+  a[href]::after {
+    content: none !important;
+  }
+
+  /* Hide conversation input area, AI follow-up, upload zones */
+  textarea,
+  .conversation-input,
+  .ai-follow-up,
+  .upload-zone,
+  [data-upload-zone] {
+    display: none !important;
+  }
+
+  /* Ensure proper background colors print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Badge styling for print */
+  .badge {
+    border: 1px solid #999 !important;
+    padding: 1px 6px !important;
+  }
+}

@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { Upload, FileText, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
+import { documentsApi } from "@/lib/api/documents";
 
 interface DocumentUploadZoneProps {
   onUploadComplete?: (doc: { id: string; fileName: string; blobUrl: string }) => void;
@@ -24,22 +25,8 @@ export function DocumentUploadZone({ onUploadComplete, documentType, compact }: 
     setUploadedFile(file.name);
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("title", file.name.replace(/\.[^/.]+$/, ""));
-      if (documentType) formData.append("documentType", documentType);
-
-      const response = await fetch("/api/documents/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Upload failed");
-      }
-
-      const data = await response.json();
+      const title = file.name.replace(/\.[^/.]+$/, "");
+      const data = await documentsApi.upload(file, title, documentType);
       onUploadComplete?.({ id: data.id, fileName: data.fileName, blobUrl: data.blobUrl });
     } catch (err: any) {
       setError(err.message || "Upload failed");

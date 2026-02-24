@@ -1,3 +1,6 @@
+// @deprecated — This route is no longer used. Embedding operations now go through
+// FastAPI via caseLawApi.batchEmbeddings() in lib/api/case-law.ts. Kept for rollback only.
+
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { generateEmbeddings } from "@/lib/ai/embeddings";

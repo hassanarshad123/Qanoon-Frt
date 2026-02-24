@@ -4,10 +4,10 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Pin, MessageSquare, Clock } from "lucide-react";
-import type { ResearchConversationDB } from "@/lib/research/types";
+import type { ResearchConversationSummary } from "@/lib/api/research";
 
 interface ResearchConversationCardProps {
-  conversation: ResearchConversationDB;
+  conversation: ResearchConversationSummary & { lastMessagePreview?: string | null };
 }
 
 export function ResearchConversationCard({

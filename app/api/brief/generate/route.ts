@@ -1,3 +1,5 @@
+// @deprecated — This route is no longer used. Brief generation now goes through
+// FastAPI via briefsApi.generate() in lib/api/briefs.ts. Kept for rollback only.
 import { anthropic } from "@/lib/ai/client";
 import { AI_MODELS } from "@/lib/ai/models";
 import { buildGenerationPrompt } from "@/lib/ai/prompts";

@@ -1,3 +1,5 @@
+// @deprecated — This route is no longer used. Chunk analysis now goes through
+// FastAPI via briefsApi.analyzeChunk() in lib/api/briefs.ts. Kept for rollback only.
 import { NextResponse } from "next/server";
 import { anthropic } from "@/lib/ai/client";
 import { AI_MODELS } from "@/lib/ai/models";

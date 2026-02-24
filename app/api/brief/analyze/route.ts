@@ -1,3 +1,5 @@
+// @deprecated — This route is no longer used. Brief analysis now goes through
+// FastAPI via briefsApi.analyze() in lib/api/briefs.ts. Kept for rollback only.
 import { NextResponse } from "next/server";
 import { anthropic } from "@/lib/ai/client";
 import { AI_MODELS } from "@/lib/ai/models";

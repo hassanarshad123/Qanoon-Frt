@@ -1,3 +1,6 @@
+// @deprecated — This route is no longer used. Document uploads now go through
+// FastAPI via documentsApi.upload() in lib/api/documents.ts. Kept for rollback only.
+
 import { put } from "@vercel/blob";
 import { requireAuth } from "@/lib/auth/api";
 import { createDocumentRecord } from "@/lib/actions/documents";

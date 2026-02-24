@@ -1,3 +1,6 @@
+// @deprecated — This route is no longer used. Judgment generation now goes through
+// FastAPI via judgmentsApi.generate() in lib/api/judgments.ts. Kept for rollback only.
+
 import { anthropic } from "@/lib/ai/client";
 import { AI_MODELS } from "@/lib/ai/models";
 import { buildJudgmentGenerationPrompt } from "@/lib/ai/prompts";

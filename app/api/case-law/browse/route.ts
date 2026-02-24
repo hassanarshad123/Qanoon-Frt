@@ -1,3 +1,6 @@
+// @deprecated — This route is no longer used. Case law browsing now goes through
+// FastAPI via caseLawApi.browse() in lib/api/case-law.ts. Kept for rollback only.
+
 import { NextRequest, NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth/api";
 import { browse } from "@/lib/rag";

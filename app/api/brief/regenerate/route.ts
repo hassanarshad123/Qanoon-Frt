@@ -1,3 +1,6 @@
+// @deprecated — This route is no longer used. Brief regeneration now goes through
+// FastAPI via briefsApi.regenerate() in lib/api/briefs.ts. Kept for rollback only.
+
 import { anthropic } from "@/lib/ai/client";
 import { AI_MODELS } from "@/lib/ai/models";
 import { buildRegenerationPrompt } from "@/lib/ai/prompts";

@@ -12,8 +12,8 @@ import { PageHeader } from "@/components/judges/shared/page-header";
 import { EmptyState } from "@/components/judges/shared/empty-state";
 import { CaseSelector } from "@/components/judges/shared/case-selector";
 import { ResearchConversationCard } from "@/components/judges/shared/research-conversation-card";
-import { listConversations, deleteConversation, togglePin } from "@/lib/research/actions";
-import type { ResearchConversationDB, ResearchMode } from "@/lib/research/types";
+import { researchApi, type ResearchConversationSummary } from "@/lib/api/research";
+import type { ResearchMode } from "@/lib/research/types";
 import { toast } from "sonner";
 
 const suggestions = [
@@ -28,15 +28,15 @@ export default function ResearchListPage() {
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<ResearchMode>("general");
   const [selectedCaseId, setSelectedCaseId] = useState<string>("");
-  const [conversations, setConversations] = useState<ResearchConversationDB[]>([]);
+  const [conversations, setConversations] = useState<ResearchConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchFilter, setSearchFilter] = useState("");
 
   useEffect(() => {
-    listConversations().then((data) => {
+    researchApi.listConversations().then((data) => {
       setConversations(data);
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
   }, []);
 
   const handleSubmit = () => {
@@ -64,27 +64,23 @@ export default function ResearchListPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await deleteConversation(id);
+    await researchApi.deleteConversation(id);
     setConversations((prev) => prev.filter((c) => c.id !== id));
     toast.success("Conversation deleted");
   };
 
   const handleTogglePin = async (id: string) => {
-    const pinned = await togglePin(id);
+    const result = await researchApi.togglePin(id);
     setConversations((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, pinned } : c))
+      prev.map((c) => (c.id === id ? { ...c, pinned: result.pinned } : c))
     );
-    toast.success(pinned ? "Pinned" : "Unpinned");
+    toast.success(result.pinned ? "Pinned" : "Unpinned");
   };
 
   // Filter conversations client-side
   const filtered = searchFilter.trim()
     ? conversations.filter(
-        (c) =>
-          c.title.toLowerCase().includes(searchFilter.toLowerCase()) ||
-          (c.lastMessagePreview || "")
-            .toLowerCase()
-            .includes(searchFilter.toLowerCase())
+        (c) => c.title.toLowerCase().includes(searchFilter.toLowerCase())
       )
     : conversations;
 

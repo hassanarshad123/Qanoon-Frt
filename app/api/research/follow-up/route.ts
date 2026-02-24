@@ -1,3 +1,6 @@
+// @deprecated — This route is no longer used. Research follow-ups now go through
+// FastAPI via researchApi.followUp() in lib/api/research.ts. Kept for rollback only.
+
 import { anthropic } from "@/lib/ai/client";
 import { AI_MODELS } from "@/lib/ai/models";
 import {

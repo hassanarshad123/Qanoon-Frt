@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { toast } from "sonner";
+import { adminApi } from "@/lib/api/admin";
 
 interface SearchResultItem {
   judgment: {
@@ -75,18 +76,8 @@ export function RAGTestQuery() {
       if (yearFrom) filters.yearFrom = parseInt(yearFrom, 10);
       if (yearTo) filters.yearTo = parseInt(yearTo, 10);
 
-      const res = await fetch("/api/admin/rag/query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query.trim(), filters, limit: 10 }),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `HTTP ${res.status}`);
-      }
-
-      setResult(await res.json());
+      const data = await adminApi.ragQuery({ query: query.trim(), filters, limit: 10 });
+      setResult(data as unknown as QueryResult);
       toast.success("Query completed");
     } catch (err: any) {
       toast.error("Query failed: " + err.message);

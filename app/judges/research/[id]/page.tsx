@@ -17,7 +17,7 @@ import { SaveToNotesDialog } from "@/components/judges/shared/save-to-notes-dial
 import { ConversationInput } from "@/components/judges/shared/conversation-input";
 import { StructuredResponseRenderer } from "@/components/judges/shared/structured-response";
 import { useResearchChat } from "@/hooks/use-research-chat";
-import { getConversation, togglePin } from "@/lib/research/actions";
+import { researchApi } from "@/lib/api/research";
 import type { ResearchMessageDB } from "@/lib/research/types";
 import type { StructuredResearchResponse } from "@/lib/research/types";
 import { cn } from "@/lib/utils/cn";
@@ -182,13 +182,13 @@ export default function ResearchConversationPage() {
       }
     } else {
       // Load existing conversation
-      getConversation(id).then((conv) => {
+      researchApi.getConversation(id).then((conv) => {
         if (conv) {
           setPinned(conv.pinned);
           loadConversation(id, conv.title);
         }
         setLoading(false);
-      });
+      }).catch(() => setLoading(false));
     }
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -215,9 +215,9 @@ export default function ResearchConversationPage() {
   const handleTogglePin = async () => {
     const realId = conversationId || id;
     if (!realId || realId === "new") return;
-    const newPinned = await togglePin(realId);
-    setPinned(newPinned);
-    toast.success(newPinned ? "Pinned" : "Unpinned");
+    const result = await researchApi.togglePin(realId);
+    setPinned(result.pinned);
+    toast.success(result.pinned ? "Pinned" : "Unpinned");
   };
 
   if (loading) {

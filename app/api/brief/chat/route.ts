@@ -1,3 +1,6 @@
+// @deprecated — This route is no longer used. Brief chat now goes through
+// FastAPI via briefsApi.chatStream() in lib/api/briefs.ts. Kept for rollback only.
+
 import { anthropic } from "@/lib/ai/client";
 import { AI_MODELS } from "@/lib/ai/models";
 import { buildChatPrompt } from "@/lib/ai/prompts";

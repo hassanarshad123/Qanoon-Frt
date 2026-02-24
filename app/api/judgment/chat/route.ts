@@ -1,3 +1,6 @@
+// @deprecated — This route is no longer used. Judgment chat now goes through
+// FastAPI via judgmentsApi.chatStream() in lib/api/judgments.ts. Kept for rollback only.
+
 import { anthropic } from "@/lib/ai/client";
 import { AI_MODELS } from "@/lib/ai/models";
 import { buildJudgmentChatPrompt } from "@/lib/ai/prompts";

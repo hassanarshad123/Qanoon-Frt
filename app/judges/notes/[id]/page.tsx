@@ -45,7 +45,7 @@ function getSourceHref(note: Note): string | null {
     case "brief":
       return `/judges/brief/${note.sourceId}`;
     case "judgment":
-      return `/judges/judgments/${note.sourceId}`;
+      return `/judges/judgment/${note.sourceId}`;
     case "research":
       return `/judges/research/${note.sourceId}`;
     default:

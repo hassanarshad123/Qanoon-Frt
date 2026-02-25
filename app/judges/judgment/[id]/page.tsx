@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,12 +27,24 @@ import { SectionEditor } from "@/components/judges/shared/section-editor";
 import { RegenerateDialog } from "@/components/judges/shared/regenerate-dialog";
 import { LegalStatusBadge } from "@/components/judges/shared/legal-status-badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   judgmentsApi,
   type JudgmentDetail,
   type JudgmentSection,
 } from "@/lib/api/judgments";
 
 type Judgment = JudgmentDetail;
+import Markdown from "react-markdown";
 import { toast } from "sonner";
 
 const AI_SUGGESTIONS = [
@@ -44,6 +56,7 @@ const AI_SUGGESTIONS = [
 
 export default function JudgmentDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
 
   const [judgment, setJudgment] = useState<Judgment | null>(null);
@@ -257,6 +270,16 @@ export default function JudgmentDetailPage() {
     toast.success("Judgment finalized");
   }, [judgment, id]);
 
+  const handleDelete = useCallback(async () => {
+    try {
+      await judgmentsApi.delete(id);
+      toast.success("Judgment deleted");
+      router.push("/judges/judgment");
+    } catch {
+      toast.error("Failed to delete judgment");
+    }
+  }, [id, router]);
+
   if (loading) {
     return (
       <div className="space-y-4">
@@ -310,11 +333,39 @@ export default function JudgmentDetailPage() {
         </Link>
         <div className="flex items-center gap-2">
           <LegalStatusBadge status={judgment.status} />
-          <ExportMenu title={judgment.caseTitle} />
+          <ExportMenu
+            title={judgment.caseTitle}
+            sections={judgment.sections.map(s => ({ title: s.title, content: s.content }))}
+          />
           <SaveToNotesDialog
             title="Save Judgment to Notes"
             sourceLabel={judgment.caseTitle}
+            content={judgment.sections.map(s => `${s.title}\n${s.content}`).join("\n\n")}
+            sourceId={id}
+            sourceType="judgment"
           />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Judgment</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this judgment? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           {judgment.status !== "finalized" && allApproved && (
             <Button
               onClick={handleFinalize}
@@ -415,8 +466,8 @@ export default function JudgmentDetailPage() {
                                 onCancel={() => setEditingSection(null)}
                               />
                             ) : (
-                              <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                                {section.content}
+                              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                                <Markdown>{section.content}</Markdown>
                               </div>
                             )}
                             {judgment.status !== "finalized" && !isEditing && (

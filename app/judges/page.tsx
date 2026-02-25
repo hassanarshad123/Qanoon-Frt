@@ -13,6 +13,7 @@ import {
   ChevronRight,
   ArrowUpRight,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -75,12 +76,22 @@ function formatRelativeTime(dateStr: string): string {
 export default function JudgesDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadDashboard = () => {
+    setLoading(true);
+    setError(null);
     dashboardApi.getJudgeDashboard()
       .then(setData)
-      .catch(console.error)
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load dashboard data");
+      })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadDashboard();
   }, []);
 
   const today = new Date().toLocaleDateString("en-US", {
@@ -115,6 +126,19 @@ export default function JudgesDashboard() {
           <p className="text-xs text-gray-400 mt-0.5">{data.profile.courtName}</p>
         )}
       </div>
+
+      {/* Error State */}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={loadDashboard}>
+            Retry
+          </Button>
+        </div>
+      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="dashboard-stats">

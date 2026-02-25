@@ -262,10 +262,18 @@ export default function ResearchConversationPage() {
           >
             <Pin className={cn("h-4 w-4", pinned && "fill-[#A21CAF]")} />
           </Button>
-          <ExportMenu title={conversationTitle} />
+          <ExportMenu
+            title={conversationTitle}
+            sections={messages
+              .filter(m => m.role === "assistant")
+              .map((m, i) => ({ title: `Response ${i + 1}`, content: m.content }))}
+          />
           <SaveToNotesDialog
             title="Save Research to Notes"
             sourceLabel={conversationTitle}
+            content={messages.filter(m => m.role === "assistant").map(m => m.content).join("\n\n")}
+            sourceId={conversationId || id}
+            sourceType="research"
           />
         </div>
       </div>

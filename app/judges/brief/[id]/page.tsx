@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -17,6 +17,7 @@ import {
   Brain,
   Columns3,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,18 @@ import { SourceReferenceBadge } from "@/components/judges/shared/source-referenc
 import { SectionReviewControls } from "@/components/judges/shared/section-review-controls";
 import { SectionEditor } from "@/components/judges/shared/section-editor";
 import { RegenerateDialog } from "@/components/judges/shared/regenerate-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import { BriefReviewProgress } from "@/components/judges/shared/brief-review-progress";
 import { briefsApi, type BriefDetail, type BriefSection, type BriefChatMessage } from "@/lib/api/briefs";
 import type { EnhancedBriefSection, SectionReviewStatus } from "@/lib/brief-pipeline/types";
@@ -141,6 +154,7 @@ function isEnhancedBrief(brief: Brief | EnhancedBrief): brief is EnhancedBrief {
 // ===================================================================
 export default function BriefDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
 
   const [brief, setBrief] = useState<Brief | EnhancedBrief | null>(null);
@@ -374,6 +388,16 @@ export default function BriefDetailPage() {
     briefsApi.updateStatus(id, "finalized").catch(console.error);
   }, [brief, id]);
 
+  const handleDelete = useCallback(async () => {
+    try {
+      await briefsApi.delete(id);
+      toast.success("Brief deleted");
+      router.push("/judges/brief");
+    } catch {
+      toast.error("Failed to delete brief");
+    }
+  }, [id, router]);
+
   // -------------------------------------------------------------------
   // Section rendering helpers
   // -------------------------------------------------------------------
@@ -526,11 +550,39 @@ export default function BriefDetailPage() {
           Back to Briefs
         </Link>
         <div className="flex items-center gap-2 flex-wrap">
-          <ExportMenu title="Case Brief" />
+          <ExportMenu
+            title={brief.caseTitle || "Case Brief"}
+            sections={brief.sections.map(s => ({ title: s.title, content: s.content }))}
+          />
           <SaveToNotesDialog
             title="Save Brief to Notes"
             sourceLabel={brief.caseTitle}
+            content={brief.sections.map(s => `${s.title}\n${s.content}`).join("\n\n")}
+            sourceId={id}
+            sourceType="brief"
           />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Brief</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this brief? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Button
             asChild
             className="bg-[#A21CAF] hover:bg-[#86198F] gap-2"

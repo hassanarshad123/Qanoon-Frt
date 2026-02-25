@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, MessageSquare, Pin } from "lucide-react";
+import { Search, MessageSquare, Pin, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -30,13 +30,23 @@ export default function ResearchListPage() {
   const [selectedCaseId, setSelectedCaseId] = useState<string>("");
   const [conversations, setConversations] = useState<ResearchConversationSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState("");
 
-  useEffect(() => {
+  const loadConversations = () => {
+    setLoading(true);
+    setError(null);
     researchApi.listConversations().then((data) => {
       setConversations(data);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch(() => {
+      setError("Failed to load conversations");
+      setLoading(false);
+    });
+  };
+
+  useEffect(() => {
+    loadConversations();
   }, []);
 
   const handleSubmit = () => {
@@ -200,7 +210,12 @@ export default function ResearchListPage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {pinned.map((conv) => (
-              <ResearchConversationCard key={conv.id} conversation={conv} />
+              <ResearchConversationCard
+                key={conv.id}
+                conversation={conv}
+                onDelete={handleDelete}
+                onTogglePin={handleTogglePin}
+              />
             ))}
           </div>
         </div>
@@ -212,7 +227,17 @@ export default function ResearchListPage() {
           {pinned.length > 0 ? "Recent" : "Previous Conversations"}
         </h2>
 
-        {loading ? (
+        {error ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadConversations}>
+              Retry
+            </Button>
+          </div>
+        ) : loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="animate-pulse">
@@ -239,7 +264,12 @@ export default function ResearchListPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recent.map((conv) => (
-              <ResearchConversationCard key={conv.id} conversation={conv} />
+              <ResearchConversationCard
+                key={conv.id}
+                conversation={conv}
+                onDelete={handleDelete}
+                onTogglePin={handleTogglePin}
+              />
             ))}
           </div>
         )}

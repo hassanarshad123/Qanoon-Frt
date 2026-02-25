@@ -103,10 +103,19 @@ export default function NoteDetailPage() {
     [id]
   );
 
-  const { saveStatus } = useAutoSave(content, {
+  const { saveStatus, forceSave } = useAutoSave(content, {
     onSave: handleSaveContent,
     delay: 1000,
   });
+
+  // Force save on beforeunload to prevent content loss
+  useEffect(() => {
+    const handler = () => {
+      forceSave();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [forceSave]);
 
   // Load initial data
   useEffect(() => {

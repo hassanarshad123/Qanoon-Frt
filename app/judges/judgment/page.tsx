@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Gavel, FileText, Loader2, Plus } from "lucide-react";
+import { Gavel, FileText, Loader2, Plus, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +38,9 @@ function JudgmentListContent() {
   const [judgments, setJudgments] = useState<JudgmentSummary[]>([]);
   const [briefs, setBriefs] = useState<BriefSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState("");
   const [selectedBriefId, setSelectedBriefId] = useState<string>(preselectedBriefId);
   const [creationMode, setCreationMode] = useState<"brief" | "manual">(preselectedBriefId ? "brief" : "brief");
 
@@ -47,21 +49,25 @@ function JudgmentListContent() {
   const [manualCaseNumber, setManualCaseNumber] = useState("");
   const [manualCourt, setManualCourt] = useState("");
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [judgmentsData, briefsData] = await Promise.all([
-          judgmentsApi.list(),
-          briefsApi.list(),
-        ]);
-        setJudgments(judgmentsData);
-        setBriefs(briefsData);
-      } catch (err) {
-        console.error("Failed to load data:", err);
-      } finally {
-        setLoading(false);
-      }
+  const loadData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [judgmentsData, briefsData] = await Promise.all([
+        judgmentsApi.list(),
+        briefsApi.list(),
+      ]);
+      setJudgments(judgmentsData);
+      setBriefs(briefsData);
+    } catch (err) {
+      console.error("Failed to load data:", err);
+      setError("Failed to load judgments");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
     loadData();
   }, []);
 
@@ -88,10 +94,36 @@ function JudgmentListContent() {
     }
 
     setGenerating(true);
+    setGenerationProgress("Preparing case analysis...");
     try {
+      let fullText = "";
+      let sectionCount = 0;
+      const sectionNames = [
+        "Case Header", "Facts of the Case", "Issues for Determination",
+        "Arguments & Analysis", "Applicable Law", "Findings & Reasoning",
+        "Order / Judgment"
+      ];
+
       for await (const chunk of judgmentsApi.generate(body)) {
         const parsed = chunk as Record<string, unknown>;
+
+        if (parsed.meta) {
+          setGenerationProgress("AI is analyzing the case...");
+        }
+
+        if (parsed.text) {
+          fullText += parsed.text as string;
+          // Detect section markers (## or numbered headings)
+          const newSectionCount = (fullText.match(/^##\s/gm) || []).length;
+          if (newSectionCount > sectionCount) {
+            sectionCount = newSectionCount;
+            const currentSection = sectionNames[sectionCount - 1] || `Section ${sectionCount}`;
+            setGenerationProgress(`Drafting ${currentSection}... (${sectionCount} of 7)`);
+          }
+        }
+
         if (parsed.complete) {
+          setGenerationProgress("Saving judgment...");
           const complete = parsed.complete as Record<string, unknown>;
           if (complete.judgmentId) {
             router.push(`/judges/judgment/${complete.judgmentId}`);
@@ -103,6 +135,7 @@ function JudgmentListContent() {
       console.error("Generation error:", err);
       toast.error("Failed to generate judgment. Please try again.");
       setGenerating(false);
+      setGenerationProgress("");
     }
   };
 
@@ -134,8 +167,11 @@ function JudgmentListContent() {
             <div className="flex flex-col items-center py-8">
               <Loader2 className="h-8 w-8 text-[#A21CAF] animate-spin mb-4" />
               <p className="text-sm font-medium text-gray-900">Generating Judgment...</p>
-              <p className="text-xs text-gray-500 mt-1">
-                AI is analyzing the case and drafting 7 sections. This may take a minute.
+              <p className="text-xs text-[#A21CAF] font-medium mt-2">
+                {generationProgress || "Preparing..."}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                This may take a minute.
               </p>
             </div>
           ) : (
@@ -246,7 +282,17 @@ function JudgmentListContent() {
           Previous Judgment Drafts
         </h2>
 
-        {loading ? (
+        {error ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadData}>
+              Retry
+            </Button>
+          </div>
+        ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">

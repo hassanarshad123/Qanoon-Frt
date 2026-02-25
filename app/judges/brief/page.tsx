@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FileText, Plus, Loader2 } from "lucide-react";
+import { FileText, Plus, Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -21,19 +21,27 @@ export default function BriefListPage() {
   const router = useRouter();
   const [briefs, setBriefs] = useState<BriefSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCase, setSelectedCase] = useState<string>("");
   const [documentsReady, setDocumentsReady] = useState<UploadedDocument[] | null>(null);
   const [saving, setSaving] = useState(false);
 
   const pipeline = useBriefPipeline();
 
-  useEffect(() => {
+  const loadBriefs = () => {
+    setLoading(true);
+    setError(null);
     briefsApi.list().then((data) => {
       setBriefs(data);
       setLoading(false);
     }).catch(() => {
+      setError("Failed to load briefs");
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    loadBriefs();
   }, []);
 
   // When pipeline completes, save to DB and navigate
@@ -79,6 +87,16 @@ export default function BriefListPage() {
 
   const isPipelineRunning =
     pipeline.phase !== "idle" && pipeline.phase !== "complete" && pipeline.phase !== "error";
+
+  // Warn before leaving during active generation
+  useEffect(() => {
+    if (!isPipelineRunning && !saving) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isPipelineRunning, saving]);
   const showProgress = isPipelineRunning || saving || pipeline.phase === "error";
 
   const formatDate = (dateStr: string) => {
@@ -218,7 +236,17 @@ export default function BriefListPage() {
           <span className="text-sm text-gray-500">{briefs.length} briefs</span>
         </div>
 
-        {loading ? (
+        {error ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={loadBriefs}>
+              Retry
+            </Button>
+          </div>
+        ) : loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">

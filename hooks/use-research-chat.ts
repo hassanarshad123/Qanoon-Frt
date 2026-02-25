@@ -273,16 +273,25 @@ export function useResearchChat() {
 
       try {
         const apiMsgs = await researchApi.getMessages(id);
-        setMessages(apiMsgs.map((m) => ({
-          id: m.id,
-          conversationId: id,
-          role: m.role as "user" | "assistant",
-          content: m.content,
-          structuredResponse: null,
-          citations: m.citations as Citation[],
-          ragContext: null,
-          createdAt: m.createdAt,
-        })));
+        setMessages(apiMsgs.map((m) => {
+          const isAssistant = m.role === "assistant";
+          const structured = isAssistant ? parseStructuredResponse(m.content) : {};
+          const hasStructured = Object.keys(structured).length > 0;
+          return {
+            id: m.id,
+            conversationId: id,
+            role: m.role as "user" | "assistant",
+            content: m.content,
+            structuredResponse: isAssistant && hasStructured
+              ? (structured as StructuredResearchResponse)
+              : null,
+            citations: isAssistant
+              ? extractCitations(m.content)
+              : (m.citations as Citation[]),
+            ragContext: null,
+            createdAt: m.createdAt,
+          };
+        }));
       } catch {
         setError("Failed to load conversation");
       }

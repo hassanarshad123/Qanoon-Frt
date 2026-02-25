@@ -8,6 +8,7 @@ import {
   AlertTriangle,
   ScrollText,
 } from "lucide-react";
+import Markdown from "react-markdown";
 import type { StructuredResearchResponse } from "@/lib/research/types";
 import type { Citation } from "@/lib/types/portal";
 import { CitationBadge } from "./citation-badge";
@@ -58,10 +59,8 @@ function SectionBlock({
         <h4 className="text-sm font-semibold text-gray-900">{title}</h4>
       </div>
       <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
-        <div className="whitespace-pre-wrap text-sm">
-          {content}
-          {isStreaming && isLast && <StreamingCursor />}
-        </div>
+        <Markdown>{content}</Markdown>
+        {isStreaming && isLast && <StreamingCursor />}
       </div>
     </div>
   );

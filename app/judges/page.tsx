@@ -141,7 +141,7 @@ export default function JudgesDashboard() {
       )}
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-tour="dashboard-stats">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4" data-tour="dashboard-stats">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -202,6 +202,22 @@ export default function JudgesDashboard() {
                 {loading ? "—" : data?.stats.totalNotes ?? 0}
               </p>
               <p className="text-sm text-gray-500">Notes</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                <FileStack className="h-5 w-5 text-emerald-600" />
+              </div>
+            </div>
+            <div className="mt-3">
+              <p className="text-2xl font-bold text-gray-900">
+                {loading ? "—" : data?.stats.totalDocuments ?? 0}
+              </p>
+              <p className="text-sm text-gray-500">Documents</p>
             </div>
           </CardContent>
         </Card>

@@ -34,7 +34,7 @@ function DocumentPage({ className = "", style = {} }: { className?: string; styl
   }), []);
 
   return (
-    <div className={`bg-white border border-gray-200 rounded-lg shadow-sm p-6 ${className}`} style={style}>
+    <div className={`bg-white border border-gray-200 rounded-lg shadow-sm p-6 overflow-hidden ${className}`} style={style}>
       <div className="space-y-3">
         <div className="h-3 w-16 bg-gray-300 rounded" />
         <div className="space-y-2">
@@ -336,7 +336,7 @@ export default function HeroVisual() {
             className="absolute top-[50%]"
             style={{
               left: '5%',
-              animation: 'docSlide2 6s ease-in-out infinite 2s',
+              animation: 'docSlide2 6s ease-in-out infinite 2s backwards',
             }}
           >
             <TableDocument className="w-44 h-52" />
@@ -346,7 +346,7 @@ export default function HeroVisual() {
             className="absolute top-[38%]"
             style={{
               left: '2%',
-              animation: 'docSlide3 6s ease-in-out infinite 4s',
+              animation: 'docSlide3 6s ease-in-out infinite 4s backwards',
             }}
           >
             <DocumentPage className="w-40 h-56" />
